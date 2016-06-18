@@ -284,13 +284,16 @@ zval *s_php_zbarcode_scan_page(zbar_image_scanner_t *scanner, zbar_image_t *imag
 
 	/* Loop through all all symbols */
 	for(; symbol; symbol = zbar_symbol_next(symbol)) {
-		zval *symbol_array, *loc_array;
 		zbar_symbol_type_t symbol_type;
 		const char *data;
 		unsigned int loc_size;
 
+		zval _symbol_array, *symbol_array = &_symbol_array;
+#ifndef ZEND_ENGINE_3
+		MAKE_STD_ZVAL(symbol_array)
+#endif
+
 		/* Initialize array element */
-		MAKE_STD_ZVAL(symbol_array);
 		array_init(symbol_array);
 
 		/* Get symbol type and data in it */
@@ -310,13 +313,20 @@ zval *s_php_zbarcode_scan_page(zbar_image_scanner_t *scanner, zbar_image_t *imag
 		if (extended) {
 			unsigned int i;
 
-			MAKE_STD_ZVAL(loc_array);
+			zval _loc_array, *loc_array = &_loc_array;
+#ifndef ZEND_ENGINE_3
+			MAKE_STD_ZVAL(loc_array)
+#endif
+
 			array_init(loc_array);
 			loc_size = zbar_symbol_get_loc_size(symbol);
 
 			for (i = 0; i < loc_size; i++) {
-				zval *coords;
-				MAKE_STD_ZVAL(coords);
+				zval _coords, *coords = &_coords;
+#ifndef ZEND_ENGINE_3
+				MAKE_STD_ZVAL(coords)
+#endif
+
 				array_init(coords);
 
 				add_assoc_long(coords, "x", zbar_symbol_get_loc_x(symbol, i));
@@ -514,7 +524,11 @@ PHP_METHOD(zbarcodescanner, scan)
 
 		MagickResetIterator(magick_wand);
 		while (MagickNextImage(magick_wand) != MagickFalse) {
-			zval *page_array;
+			zval _page_array, *page_array = &_page_array;
+
+#ifndef ZEND_ENGINE_3
+			MAKE_STD_ZVAL(page_array)
+#endif
 
 			/* Read the current page */
 			page = s_php_zbarcode_get_page(magick_wand);
@@ -525,8 +539,6 @@ PHP_METHOD(zbarcodescanner, scan)
 				continue;
 			}
 			/* Scan the page for barcodes */
-			MAKE_STD_ZVAL(page_array);
-
 			s_php_zbarcode_scan_page(intern->scanner, page, extended, page_array TSRMLS_CC);
 			add_index_zval(return_value, i++, page_array);
 		}
