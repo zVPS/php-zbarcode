@@ -80,6 +80,12 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 	#define ZBARCODE_LEN_TYPE int
 #endif
 
+#ifdef ZEND_ENGINE_3
+	#define ZBARCODE_LONG_TYPE zend_long
+#else
+	#define ZBARCODE_LONG_TYPE long
+#endif
+
 static
 void s_throw_image_exception (MagickWand *magick_wand, const char *message TSRMLS_DC)
 {
@@ -135,7 +141,7 @@ PHP_METHOD(zbarcodeimage, __construct)
 	php_zbarcode_image_object *intern;
 	char *filename = NULL;
 	ZBARCODE_LEN_TYPE filename_len = 0;
-	long enhance = 0;
+	ZBARCODE_LONG_TYPE enhance = 0;
 	char resolved_path[MAXPATHLEN];
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s!l", &filename, &filename_len, &enhance) == FAILURE) {
@@ -173,7 +179,7 @@ PHP_METHOD(zbarcodeimage, read)
 	php_zbarcode_image_object *intern;
 	char *filename;
 	ZBARCODE_LEN_TYPE filename_len;
-	long enhance = 0;
+	ZBARCODE_LONG_TYPE enhance = 0;
 	char resolved_path[MAXPATHLEN];
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &filename, &filename_len, &enhance) == FAILURE) {
@@ -361,7 +367,8 @@ PHP_METHOD(zbarcodescanner, scan)
 	zval *object;
 	int i = 1;
 	zend_bool extended = 0;
-	long page_num = 1, image_count;
+	ZBARCODE_LONG_TYPE page_num = 1;
+	long image_count;
 	zend_bool free_ptr = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|lb", &image, &page_num, &extended) == FAILURE) {
