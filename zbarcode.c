@@ -49,6 +49,31 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 #define PHP_ZBARCODE_ENHANCE	2
 #define PHP_ZBARCODE_SHARPEN	4
 
+#ifdef ZEND_ENGINE_3
+	#define Z_ZBARCODE(obj) (php_zbarcode_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_object, zo))
+	#define Z_ZBARCODE_P(zv) Z_ZBARCODE(Z_OBJ_P(zv))
+#endif
+
+#ifdef ZEND_ENGINE_3
+	#define Z_ZBARCODE_IMAGE(obj) (php_zbarcode_image_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_image_object, zo))
+	#define Z_ZBARCODE_IMAGE_P(zv) Z_ZBARCODE_IMAGE(Z_OBJ_P(zv))
+#else
+	#define Z_ZBARCODE_IMAGE_P(zv) (php_zbarcode_image_object *)zend_object_store_get_object(zv TSRMLS_CC)
+#endif
+
+#ifdef ZEND_ENGINE_3
+	#define Z_ZBARCODE_SCANNER(obj) (php_zbarcode_scanner_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_scanner_object, zo))
+	#define Z_ZBARCODE_SCANNER_P(zv) Z_ZBARCODE_SCANNER(Z_OBJ_P(zv))
+#else
+	#define Z_ZBARCODE_SCANNER_P(zv) (php_zbarcode_scanner_object *)zend_object_store_get_object(zv TSRMLS_CC)
+#endif
+
+#ifdef ZEND_ENGINE_3
+	#define Z_IMAGICK_P(zv) php_imagick_fetch_object(Z_OBJ_P((zv)))
+#else
+	#define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
+#endif
+
 static
 void s_throw_image_exception (MagickWand *magick_wand, const char *message TSRMLS_DC)
 {
@@ -124,7 +149,7 @@ PHP_METHOD(zbarcodeimage, __construct)
 		return;
 	}
 
-	intern = (php_zbarcode_image_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_IMAGE_P(getThis());
 
 	if (!s_php_zbarcode_read(intern->magick_wand, resolved_path, enhance)) {
 		s_throw_image_exception (intern->magick_wand, "Unable to read the image" TSRMLS_CC);
@@ -158,7 +183,7 @@ PHP_METHOD(zbarcodeimage, read)
 		return;
 	}
 
-	intern = (php_zbarcode_image_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_IMAGE_P(getThis());
 
 	if (!s_php_zbarcode_read(intern->magick_wand, resolved_path, enhance)) {
 		s_throw_image_exception (intern->magick_wand, "Unable to read the image" TSRMLS_CC);
@@ -179,7 +204,7 @@ PHP_METHOD(zbarcodeimage, clear)
 		return;
 	}
 
-	intern = (php_zbarcode_image_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_IMAGE_P(getThis());
 	ClearMagickWand(intern->magick_wand);
 
 	PHP_ZBARCODE_CHAIN_METHOD;
@@ -197,7 +222,7 @@ PHP_METHOD(zbarcodeimage, count)
 		return;
 	}
 
-	intern = (php_zbarcode_image_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_IMAGE_P(getThis());
 	RETURN_LONG(MagickGetNumberImages(intern->magick_wand));
 }
 /* }}} */
@@ -334,18 +359,18 @@ PHP_METHOD(zbarcodescanner, scan)
 	}
 #endif
 
-	intern = (php_zbarcode_scanner_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_SCANNER_P(getThis());
 
 	if (Z_TYPE_P(image) == IS_OBJECT && instanceof_function_ex(Z_OBJCE_P(image), php_zbarcode_image_sc_entry, 0 TSRMLS_CC)) {
 		php_zbarcode_image_object *intern_image;
 
-		intern_image = (php_zbarcode_image_object *)zend_object_store_get_object(image TSRMLS_CC);
+		intern_image = Z_ZBARCODE_IMAGE_P(image);
 		magick_wand  = intern_image->magick_wand;
 	}
 #ifdef HAVE_ZBARCODE_IMAGICK	
 	else if (Z_TYPE_P(image) == IS_OBJECT && instanceof_function_ex(Z_OBJCE_P(image), php_imagick_get_class_entry(), 0 TSRMLS_CC)) {
 		php_imagick_object *intern_image;
-		intern_image = (php_imagick_object *)zend_object_store_get_object(image TSRMLS_CC);
+		intern_image = Z_IMAGICK_P(image);
 		magick_wand  = intern_image->magick_wand;
 	}
 #endif	
@@ -521,7 +546,7 @@ PHP_METHOD(zbarcodescanner, setconfig)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll|l", &name, &value, &symbology) == FAILURE) {
 		return;
 	}
-	intern = (php_zbarcode_scanner_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	intern = Z_ZBARCODE_SCANNER_P(getThis());
 
 	if (zbar_image_scanner_set_config(intern->scanner, symbology, name, value) != 0) {
 		zend_throw_exception(php_zbarcode_exception_class_entry, "Config does not apply to specified symbology, or value out of range", 1 TSRMLS_CC);
@@ -579,54 +604,78 @@ static zend_function_entry php_zbarcode_scanner_class_methods[] =
 
 /* {{{ static void php_zbarcode_object_free_storage(void *object TSRMLS_DC)
 */
+#ifdef ZEND_ENGINE_3
+static void php_zbarcode_object_free_storage(zend_object *object)
+#else
 static void php_zbarcode_object_free_storage(void *object TSRMLS_DC)
+#endif
 {
-	php_zbarcode_scanner_object *intern = (php_zbarcode_scanner_object *)object;
-
-	if (!intern) {
-		return;
-	}
+#ifdef ZEND_ENGINE_3
+	zend_object_std_dtor(object);
+#else
+	php_zbarcode_object *intern = (php_zbarcode_object *)object;
 	zend_object_std_dtor(&intern->zo TSRMLS_CC);
+#endif
+
+#ifndef ZEND_ENGINE_3
 	efree(intern);
+#endif
 }
 /* }}} */
 
 /* {{{ static void php_zbarcode_scanner_object_free_storage(void *object TSRMLS_DC)
 */
+#ifdef ZEND_ENGINE_3
+static void php_zbarcode_scanner_object_free_storage(zend_object *object)
+#else
 static void php_zbarcode_scanner_object_free_storage(void *object TSRMLS_DC)
+#endif
 {
-	php_zbarcode_scanner_object *intern = (php_zbarcode_scanner_object *)object;
+	php_zbarcode_scanner_object *intern;
 
-	if (!intern) {
-		return;
-	}
+#ifdef ZEND_ENGINE_3
+	intern = Z_ZBARCODE_SCANNER(object);
+#else
+	intern = (php_zbarcode_scanner_object *)object;
+#endif
 
 	if (intern->scanner) {
 		zbar_image_scanner_destroy(intern->scanner);
 		intern->scanner = NULL;
 	}
 	zend_object_std_dtor(&intern->zo TSRMLS_CC);
+
+#ifndef ZEND_ENGINE_3
 	efree(intern);
+#endif
 }
 /* }}} */
 
 /* {{{ static void php_zbarcode_image_object_free_storage(void *object TSRMLS_DC)
 */
+#ifdef ZEND_ENGINE_3
+static void php_zbarcode_image_object_free_storage(zend_object *object)
+#else
 static void php_zbarcode_image_object_free_storage(void *object TSRMLS_DC)
+#endif
 {
-	php_zbarcode_image_object *intern = (php_zbarcode_image_object *)object;
+	php_zbarcode_image_object *intern;
 
-	if (!intern) {
-		return;
-	}
+#ifdef ZEND_ENGINE_3
+	intern = Z_ZBARCODE_IMAGE(object);
+#else
+	intern = (php_zbarcode_image_object *)object;
+#endif
 
 	if (intern->magick_wand) {
 		DestroyMagickWand(intern->magick_wand);
 		intern->magick_wand = NULL;
 	}
-
 	zend_object_std_dtor(&intern->zo TSRMLS_CC);
+
+#ifndef ZEND_ENGINE_3
 	efree(intern);
+#endif
 }
 /* }}} */
 
@@ -651,8 +700,8 @@ static zend_object_value php_zbarcode_object_new(zend_class_entry *class_type TS
 	php_zbarcode_object *intern;
 
 	/* Allocate memory for it */
-	intern = emalloc(sizeof(php_zbarcode_scanner_object));
-	memset(&intern->zo, 0, sizeof(php_zbarcode_scanner_object));
+	intern = emalloc(sizeof(php_zbarcode_object));
+	memset(&intern->zo, 0, sizeof(php_zbarcode_object));
 
 	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
 	object_properties_init(&intern->zo, class_type);
@@ -733,25 +782,37 @@ PHP_MINIT_FUNCTION(zbarcode)
 		Initialize the class (zbarcode). This class is just a container for constants
 	*/
 	INIT_CLASS_ENTRY(ce, "zbarcode", php_zbarcode_class_methods);
-	ce.create_object = php_zbarcode_object_new;
 	php_zbarcode_object_handlers.clone_obj = NULL;
+#ifdef ZEND_ENGINE_3
+	php_zbarcode_object_handlers.free_obj = php_zbarcode_object_free_storage;
+	php_zbarcode_object_handlers.offset = XtOffsetOf(php_zbarcode_object, zo);
+#endif
 	php_zbarcode_sc_entry = zend_register_internal_class(&ce TSRMLS_CC);
+	php_zbarcode_sc_entry->create_object = php_zbarcode_object_new;
 
 	/*
 		Initialize the class (zbarcode image)
 	*/
 	INIT_CLASS_ENTRY(ce, "zbarcodeimage", php_zbarcode_image_class_methods);
-	ce.create_object = php_zbarcode_image_object_new;
 	php_zbarcode_image_object_handlers.clone_obj = NULL;
+#ifdef ZEND_ENGINE_3
+	php_zbarcode_image_object_handlers.free_obj = php_zbarcode_image_object_free_storage;
+	php_zbarcode_image_object_handlers.offset = XtOffsetOf(php_zbarcode_image_object, zo);
+#endif
 	php_zbarcode_image_sc_entry = zend_register_internal_class(&ce TSRMLS_CC);
+	php_zbarcode_image_sc_entry->create_object = php_zbarcode_image_object_new;
 
 	/*
 		Initialize the class (zbarcode scanner)
 	*/
 	INIT_CLASS_ENTRY(ce, "zbarcodescanner", php_zbarcode_scanner_class_methods);
-	ce.create_object = php_zbarcode_scanner_object_new;
 	php_zbarcode_scanner_object_handlers.clone_obj = NULL;
+#ifdef ZEND_ENGINE_3
+	php_zbarcode_scanner_object_handlers.free_obj = php_zbarcode_scanner_object_free_storage;
+	php_zbarcode_scanner_object_handlers.offset = XtOffsetOf(php_zbarcode_scanner_object, zo);
+#endif
 	php_zbarcode_scanner_sc_entry = zend_register_internal_class(&ce TSRMLS_CC);
+	php_zbarcode_scanner_sc_entry->create_object = php_zbarcode_scanner_object_new;
 
 	/* Do we have imagick support */
 #ifdef HAVE_ZBARCODE_IMAGICK
