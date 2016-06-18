@@ -297,8 +297,13 @@ zval *s_php_zbarcode_scan_page(zbar_image_scanner_t *scanner, zbar_image_t *imag
 		symbol_type = zbar_symbol_get_type(symbol);
 		data = zbar_symbol_get_data(symbol);
 
+#ifdef ZEND_ENGINE_3
+		add_assoc_string(symbol_array, "data", (char *)data);
+		add_assoc_string(symbol_array, "type", (char *)zbar_get_symbol_name(symbol_type));
+#else
 		add_assoc_string(symbol_array, "data", (char *)data, 1);
 		add_assoc_string(symbol_array, "type", (char *)zbar_get_symbol_name(symbol_type), 1);
+#endif
 #ifdef HAVE_ZBAR_SYMBOL_GET_QUALITY
 		add_assoc_long(symbol_array, "quality", zbar_symbol_get_quality(symbol));
 #endif		
