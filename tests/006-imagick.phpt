@@ -17,11 +17,20 @@ if (ZBarCode::HAVE_IMAGICK !== true) {
 ?>
 --FILE--
 <?php
-$image = new Imagick(dirname(__FILE__) . "/ean13.jpg");
-$image2 = new ZBarCodeImage(dirname(__FILE__) . "/ean13.jpg");
 
 $scanner = new ZBarCodeScanner();
-var_dump(array_diff($scanner->scan($image), $scanner->scan($image)));
+
+$image1 = new Imagick(dirname(__FILE__) . "/ean13.jpg");
+$image2 = new ZBarCodeImage(dirname(__FILE__) . "/ean13.jpg");
+
+$scanned_image1 = $scanner->scan($image1);
+$scanned_image2 = $scanner->scan($image2);
+
+// Allow different quality values.
+unset($scanned_image1[0]['quality']);
+unset($scanned_image2[0]['quality']);
+
+var_dump(array_diff($scanned_image1[0], $scanned_image2[0]));
 
 ?>
 --EXPECT--
