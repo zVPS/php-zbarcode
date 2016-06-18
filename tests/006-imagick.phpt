@@ -1,5 +1,7 @@
 --TEST--
 Check whether imagick integration works
+--EXTENSIONS--
+imagick
 --SKIPIF--
 <?php
 include dirname(__FILE__) . "/skipif.inc.php";

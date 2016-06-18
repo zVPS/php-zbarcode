@@ -1,5 +1,7 @@
 --TEST--
 Test GD support
+--EXTENSIONS--
+gd
 --SKIPIF--
 <?php
 include dirname(__FILE__) . "/skipif.inc.php";
