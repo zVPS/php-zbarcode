@@ -711,38 +711,63 @@ static void php_zbarcode_image_object_free_storage(void *object TSRMLS_DC)
 		 }
 #endif
 
-/* {{{ static zend_object_value php_zbarcode_object_new(zend_class_entry *class_type TSRMLS_DC)
+/* {{{ static zend_object *php_zbarcode_object_new(zend_class_entry *class_type)
 */
+#ifdef ZEND_ENGINE_3
+static zend_object *php_zbarcode_object_new(zend_class_entry *class_type)
+#else
 static zend_object_value php_zbarcode_object_new(zend_class_entry *class_type TSRMLS_DC)
+#endif
 {
 	zval *tmp;
-	zend_object_value retval;
 	php_zbarcode_object *intern;
 
+#ifdef ZEND_ENGINE_3
+	intern = ecalloc(1,
+			 sizeof(php_zbarcode_object) +
+			 zend_object_properties_size(class_type));
+#else
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_zbarcode_object));
 	memset(&intern->zo, 0, sizeof(php_zbarcode_object));
+#endif
 
 	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
 	object_properties_init(&intern->zo, class_type);
 
+#ifdef ZEND_ENGINE_3
+	intern->zo.handlers = &php_zbarcode_object_handlers;
+	return &intern->zo;
+#else
+	zend_object_value retval;
 	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) php_zbarcode_object_free_storage, NULL TSRMLS_CC);
 	retval.handlers = (zend_object_handlers *) &php_zbarcode_object_handlers;
 	return retval;
+#endif
+
 }
 /* }}} */
 
-/* {{{ static zend_object_value php_zbarcode_scanner_object_new(zend_class_entry *class_type TSRMLS_DC)
+/* {{{ static zend_object *php_zbarcode_scanner_object_new(zend_class_entry *class_type)
 */
+#ifdef ZEND_ENGINE_3
+static zend_object *php_zbarcode_scanner_object_new(zend_class_entry *class_type)
+#else
 static zend_object_value php_zbarcode_scanner_object_new(zend_class_entry *class_type TSRMLS_DC)
+#endif
 {
 	zval *tmp;
-	zend_object_value retval;
 	php_zbarcode_scanner_object *intern;
 
+#ifdef ZEND_ENGINE_3
+	intern = ecalloc(1,
+			 sizeof(php_zbarcode_scanner_object) +
+			 zend_object_properties_size(class_type));
+#else
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_zbarcode_scanner_object));
 	memset(&intern->zo, 0, sizeof(php_zbarcode_scanner_object));
+#endif
 
 	/* Initialize reader */
 	intern->scanner = zbar_image_scanner_create();
@@ -750,23 +775,39 @@ static zend_object_value php_zbarcode_scanner_object_new(zend_class_entry *class
 	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
 	object_properties_init(&intern->zo, class_type);
 
+#ifdef ZEND_ENGINE_3
+	intern->zo.handlers = &php_zbarcode_scanner_object_handlers;
+	return &intern->zo;
+#else
+	zend_object_value retval;
+
 	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) php_zbarcode_scanner_object_free_storage, NULL TSRMLS_CC);
 	retval.handlers = (zend_object_handlers *) &php_zbarcode_scanner_object_handlers;
 	return retval;
+#endif
 }
 /* }}} */
 
-/* {{{ static zend_object_value php_zbarcode_image_object_new(zend_class_entry *class_type TSRMLS_DC)
+/* {{{ static zend_object *php_zbarcode_image_object_new(zend_class_entry *class_type)
 */
+#ifdef ZEND_ENGINE_3
+static zend_object *php_zbarcode_image_object_new(zend_class_entry *class_type)
+#else
 static zend_object_value php_zbarcode_image_object_new(zend_class_entry *class_type TSRMLS_DC)
+#endif
 {
 	zval *tmp;
-	zend_object_value retval;
 	php_zbarcode_image_object *intern;
 
+#ifdef ZEND_ENGINE_3
+	intern = ecalloc(1,
+			 sizeof(php_zbarcode_image_object) +
+			 zend_object_properties_size(class_type));
+#else
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_zbarcode_image_object));
 	memset(&intern->zo, 0, sizeof(php_zbarcode_image_object));
+#endif
 
 	/* Initialize reader */
 	intern->magick_wand = NewMagickWand();
@@ -774,9 +815,16 @@ static zend_object_value php_zbarcode_image_object_new(zend_class_entry *class_t
 	zend_object_std_init(&intern->zo, class_type TSRMLS_CC);
 	object_properties_init(&intern->zo, class_type);
 
+#ifdef ZEND_ENGINE_3
+	intern->zo.handlers = &php_zbarcode_image_object_handlers;
+	return &intern->zo;
+#else
+	zend_object_value retval;
+
 	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t) php_zbarcode_image_object_free_storage, NULL TSRMLS_CC);
 	retval.handlers = (zend_object_handlers *) &php_zbarcode_image_object_handlers;
 	return retval;
+#endif
 }
 /* }}} */
 
