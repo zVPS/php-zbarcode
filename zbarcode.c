@@ -401,8 +401,11 @@ PHP_METHOD(zbarcodescanner, scan)
 		int x, y, pixel_pos = 0;
 		zend_bool has_pixels = 0;
 
+#ifdef ZEND_ENGINE_3
+		gd_image = (gdImagePtr)zend_fetch_resource(Z_RES_P(image), "Image", phpi_get_le_gd());
+#else
 		ZEND_FETCH_RESOURCE(gd_image, gdImagePtr, &image, -1, "Image", phpi_get_le_gd());
-
+#endif
 		if (!gd_image) {
 			zend_throw_exception(php_zbarcode_exception_class_entry, "The given resource is not a valid GD image", 1 TSRMLS_CC);
 			return;
