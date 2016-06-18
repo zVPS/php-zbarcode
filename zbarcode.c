@@ -74,6 +74,12 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 	#define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
 #endif
 
+#ifdef ZEND_ENGINE_3
+	#define ZBARCODE_LEN_TYPE size_t
+#else
+	#define ZBARCODE_LEN_TYPE int
+#endif
+
 static
 void s_throw_image_exception (MagickWand *magick_wand, const char *message TSRMLS_DC)
 {
@@ -128,7 +134,7 @@ PHP_METHOD(zbarcodeimage, __construct)
 {
 	php_zbarcode_image_object *intern;
 	char *filename = NULL;
-	int filename_len = 0;
+	ZBARCODE_LEN_TYPE filename_len = 0;
 	long enhance = 0;
 	char resolved_path[MAXPATHLEN];
 
@@ -166,7 +172,7 @@ PHP_METHOD(zbarcodeimage, read)
 {
 	php_zbarcode_image_object *intern;
 	char *filename;
-	int filename_len;
+	ZBARCODE_LEN_TYPE filename_len;
 	long enhance = 0;
 	char resolved_path[MAXPATHLEN];
 
