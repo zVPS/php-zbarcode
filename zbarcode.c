@@ -68,10 +68,20 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 	#define Z_ZBARCODE_SCANNER_P(zv) (php_zbarcode_scanner_object *)zend_object_store_get_object(zv TSRMLS_CC)
 #endif
 
-#ifdef ZEND_ENGINE_3
-	#define Z_IMAGICK_P(zv) php_imagick_fetch_object(Z_OBJ_P((zv)))
-#else
-	#define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
+#ifdef HAVE_ZBARCODE_IMAGICK
+	#ifdef ZEND_ENGINE_3
+		/* Structure for Imagick object. */
+		typedef struct _php_imagick_object  {
+			MagickWand *magick_wand;
+			char *progress_monitor_name;
+			zend_bool next_out_of_bound;
+			zend_object zo;
+		} php_imagick_object;
+
+		#define Z_IMAGICK_P(zv) (php_imagick_object *)((char*)(Z_OBJ_P(zv)) - XtOffsetOf(php_imagick_object, zo))
+	#else
+		#define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
+	#endif
 #endif
 
 #ifdef ZEND_ENGINE_3
