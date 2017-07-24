@@ -16,7 +16,7 @@ if test $PHP_ZBARCODE != "no"; then
 # ImageMagick macros
 #
   m4_include([imagemagick.m4])
-  IM_FIND_IMAGEMAGICK(6002004, $PHP_ZBARCODE_IMAGEMAGICK_DIR)
+  IM_FIND_IMAGEMAGICK([6.2.4], $PHP_ZBARCODE_IMAGEMAGICK_DIR)
 
   AC_MSG_CHECKING(zbar installation)
   if test "x$PHP_ZBARCODE" = "xyes"; then
