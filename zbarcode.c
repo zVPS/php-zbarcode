@@ -501,6 +501,8 @@ PHP_METHOD(zbarcodescanner, scan)
 			add_index_zval(return_value, i++, page_array);
 		}
 	}
+	
+	zbar_image_destroy(page);
 
 	if (free_ptr) {
 		DestroyMagickWand(magick_wand);
