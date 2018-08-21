@@ -95,6 +95,15 @@ if test $PHP_ZBARCODE != "no"; then
       AC_MSG_ERROR(not found. Run with --disable-zbarcode-gd to disable this feature)
     fi
 
+    AC_MSG_CHECKING(bundled libgd)
+
+    PHP_GD_BUNDLED_LIBGD_CHECK_HEADER="`$PHP_CONFIG --include-dir`/ext/gd/libgd/gd.h"
+
+    if test -r $PHP_GD_BUNDLED_LIBGD_CHECK_HEADER; then
+      AC_MSG_RESULT(found.)
+      AC_DEFINE(HAVE_GD_BUNDLED,1,[ ])
+    fi
+
     PHP_ADD_EXTENSION_DEP(zbarcode, gd)
     AC_DEFINE(HAVE_ZBARCODE_GD,1,[ ])
   fi  
