@@ -16,7 +16,7 @@ if test $PHP_ZBARCODE != "no"; then
 # ImageMagick macros
 #
   m4_include([imagemagick.m4])
-  IM_FIND_IMAGEMAGICK(6002004, $PHP_ZBARCODE_IMAGEMAGICK_DIR)
+  IM_FIND_IMAGEMAGICK([6.2.4], $PHP_ZBARCODE_IMAGEMAGICK_DIR)
 
   AC_MSG_CHECKING(zbar installation)
   if test "x$PHP_ZBARCODE" = "xyes"; then
@@ -93,6 +93,15 @@ if test $PHP_ZBARCODE != "no"; then
       AC_MSG_RESULT(found.)
     else
       AC_MSG_ERROR(not found. Run with --disable-zbarcode-gd to disable this feature)
+    fi
+
+    AC_MSG_CHECKING(bundled libgd)
+
+    PHP_GD_BUNDLED_LIBGD_CHECK_HEADER="`$PHP_CONFIG --include-dir`/ext/gd/libgd/gd.h"
+
+    if test -r $PHP_GD_BUNDLED_LIBGD_CHECK_HEADER; then
+      AC_MSG_RESULT(found.)
+      AC_DEFINE(HAVE_GD_BUNDLED,1,[ ])
     fi
 
     PHP_ADD_EXTENSION_DEP(zbarcode, gd)
