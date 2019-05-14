@@ -79,8 +79,8 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 		} php_imagick_object;
 
 		#define Z_IMAGICK_P(zv) (php_imagick_object *)((char*)(Z_OBJ_P(zv)) - XtOffsetOf(php_imagick_object, zo))
-	#else
-		#define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
+        #else
+                #define Z_IMAGICK_P(zv) (php_imagick_object *)zend_object_store_get_object(zv TSRMLS_CC)
 	#endif
 #endif
 
@@ -981,12 +981,12 @@ PHP_MSHUTDOWN_FUNCTION(zbarcode)
 */
 PHP_MINFO_FUNCTION(zbarcode)
 {
-	unsigned int major = 0, minor = 0;
+	unsigned int major = 0, minor = 0, patch = 0;
 	char *zbar_ver = NULL;
 	unsigned long magick_version;
 
-	zbar_version(&major, &minor);
-	spprintf(&zbar_ver, 24, "%d.%d", major, minor);
+	zbar_version(&major, &minor, &patch);
+	spprintf(&zbar_ver, 24, "%d.%d.%d", major, minor, patch);
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "zbarcode module",			"enabled");
