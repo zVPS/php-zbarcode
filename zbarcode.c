@@ -30,6 +30,8 @@ zend_class_entry *php_zbarcode_image_sc_entry;
 zend_class_entry *php_zbarcode_scanner_sc_entry;
 zend_class_entry *php_zbarcode_exception_class_entry;
 
+#define Z_OBJ_P(zval_p) zend_objects_get_address(zval_p TSRMLS_CC)
+
 /* Imagick support */
 #ifdef HAVE_ZBARCODE_IMAGICK
 #  include "ext/imagick/php_imagick_shared.h"
