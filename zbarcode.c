@@ -52,13 +52,17 @@ zend_class_entry *php_zbarcode_exception_class_entry;
 #ifdef ZEND_ENGINE_3
 	#define Z_ZBARCODE(obj) (php_zbarcode_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_object, zo))
 	#define Z_ZBARCODE_P(zv) Z_ZBARCODE(Z_OBJ_P(zv))
+#else 
+        #define Z_ZBARCODE(obj) (php_zbarcode_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_object, zo))
+	#define Z_ZBARCODE_P(zv) Z_ZBARCODE(Z_OBJ_P(zv))
 #endif
 
 #ifdef ZEND_ENGINE_3
 	#define Z_ZBARCODE_IMAGE(obj) (php_zbarcode_image_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_image_object, zo))
 	#define Z_ZBARCODE_IMAGE_P(zv) Z_ZBARCODE_IMAGE(Z_OBJ_P(zv))
 #else
-	#define Z_ZBARCODE_IMAGE_P(zv) (php_zbarcode_image_object *)zend_object_store_get_object(zv TSRMLS_CC)
+	#define Z_ZBARCODE_IMAGE(obj) (php_zbarcode_image_object *)((char*)(obj) - XtOffsetOf(php_zbarcode_image_object, zo))
+	#define Z_ZBARCODE_IMAGE_P(zv) Z_ZBARCODE_IMAGE(Z_OBJ_P(zv))
 #endif
 
 #ifdef ZEND_ENGINE_3
